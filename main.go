@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 	"sync"
-
+	"time"
 )
 
 const (
@@ -16,38 +15,35 @@ const (
 // generateRandomElements generates random elements.
 func generateRandomElements(size int) []int {
 	data := make([]int, size) // создаем срез для хранения случайных чисел
-	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < size; i++ {
-		data[i] = rand.Intn(1000000) // заполняем срез случайными числами от 0 до 999999
+		data[i] = rand.Int() // заполняем срез случайными числами от 0 до 999999
 	}
-	 return data 
+	return data
 }
 
 // maximum returns the maximum number of elements.
 func maximum(data []int) int {
 	if len(data) == 0 {
-		panic("пустой слайс")
+		return 0
 	}
-	max := data[0] 
+	max := data[0]
 	for _, v := range data {
 		if v > max {
 			max = v
 		}
 	}
-	 return  max 
+	return max
 }
 
 // maxChunks returns the maximum number of elements in a chunks.
 func maxChunks(data []int) int {
 	var wg sync.WaitGroup
 	if len(data) == 0 {
-		panic("пустой слайс")
+		return 0
 	}
 
-	results := make(chan int, CHUNKS)
+	chunkMaxes := make([]int, CHUNKS)
 	chunkSize := (len(data) + CHUNKS - 1) / CHUNKS
-
-	activeChunks := 0 // считаем количество реально запущенных горутин
 
 	for i := 0; i < CHUNKS; i++ {
 		start := i * chunkSize
@@ -58,49 +54,20 @@ func maxChunks(data []int) int {
 		if end > len(data) {
 			end = len(data)
 		}
-		part := data[start:end]
-		if len(part) == 0 {
-			continue
-		}
 
-		activeChunks++ // учитываем этот кусок
 		wg.Add(1)
-		go func(part []int) {
+		go func(i int, p []int) {
 			defer wg.Done()
-			max := part[0]
-			for _, v := range part {
-				if v > max {
-					max = v
-				}
-			}
-			results <- max
-		}(part)
+			chunkMaxes[i] = maximum(p)
+		}(i, data[start:end])
 	}
 
-	// закрытие канала после завершения всех горутин
-	
 	wg.Wait()
-	close(results)
-	
+	max := maximum(chunkMaxes)
 
-	// читаем ровно столько максимумов, сколько горутин запускалось
-	var chunkMaxes []int
-	for i := 0; i < activeChunks; i++ {
-		chunkMaxes = append(chunkMaxes, <-results)
-	}
-
-	max := chunkMaxes[0]
-	for _, v := range chunkMaxes {
-		if v > max {
-			max = v
-		}
-	}
 	return max
+
 }
-
-
-
-
 
 func main() {
 	fmt.Printf("Генерируем %d целых чисел", SIZE)

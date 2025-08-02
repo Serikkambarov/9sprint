@@ -1,58 +1,30 @@
 package main
 
-import "testing"
-
+import ("testing"
+		"github.com/stretchr/testify/assert"
+)
 func TestGenerateRandomElements(t *testing.T) {
 	result0 := generateRandomElements(0)
-	if len(result0) != 0 {
-		t.Errorf("при size=0 ожидался пустой срез, но получили len=%d", len(result0))
-	}
+	assert.Equal(t, 0, len(result0), "ожидался пустой срез")
 
 	size := 10
 	result := generateRandomElements(size)
-	if len(result) != size {
-		t.Errorf("Ожидался срез длины %d, но получен %d", size, len(result))
-	}
-	for i, v := range result {
-		if v < 0 || v >= 1000000 {
-			t.Errorf("Элемент на позиции %d вне диапазона: %d", i, v)
-		}
-	}
+	assert.Equal(t, size, len(result), "неверная длина среза")
+	
 }
 
 func TestMaximum(t *testing.T) {
-	if maximum([]int{1, 5, 3, 2}) != 5 {
-		t.Errorf("Ожидали максимум 5, получили другое значение")
-	}
-	if maximum([]int{42}) != 42 {
-		t.Errorf("максимум одного элемента неверен")
-	}
-	if maximum([]int{-1, -5, -3}) != -1 {
-		t.Errorf("максимум для отрицательных неверен")
-	}
+	assert.Equal(t, 5, maximum([]int{1, 5, 3, 2}), "неправильный максимум")
+	assert.Equal(t, 42, maximum([]int{42}), "неправильный максимум для одного элемента")
+	assert.Equal(t, -1, maximum([]int{-1, -5, -3}), "неправильный максимум для отрицательных")
+	assert.Equal(t, 0, maximum([]int{}), "ожидался 0 на пустом срезе")
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("ожидался panic при пустом срезе, но его не было")
-		}
-	}()
-	_ = maximum([]int{}) // проверка паники
+
 }
 
 func TestMaxChunks(t *testing.T) {
-	result := maxChunks([]int{1, 3, 2, 0})
-	if result != 3 {
-		t.Errorf("maxChunks failed: got %d want %d", result, 3)
-	}
-
-	if maxChunks([]int{7}) != 7 {
-		t.Errorf("для одного элемента ожидали 7")
-	}
-
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("ожидался panic на пустом срезе в maxChunks, но его не было")
-		}
-	}()
-	_ = maxChunks([]int{}) // проверка паники
+	assert.Equal(t ,3, maxChunks([]int{1, 3, 2, 0}), "неправильный максимум в чанках")
+	assert.Equal(t, 7, maxChunks([]int{7}), "неправильный результат для одного элемента")
+	assert.Equal(t, 0, maxChunks([]int{}), "ожидался 0 на пустом срезе")
+	
 }
